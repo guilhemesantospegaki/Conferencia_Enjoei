@@ -1,0 +1,27 @@
+name: Sync CSV from Google Drive
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Executa a cada hora
+  workflow_dispatch:      # Permite rodar manualmente
+
+jobs:
+  update-csv:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clonar repositório
+      uses: actions/checkout@v3
+
+    - name: Baixar CSV do Google Drive
+      run: |
+        curl -L -o dados.csv "https://drive.google.com/uc?export=download&id=1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw"
+
+    - name: Confirmar alterações e fazer commit
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add dados.csv
+        if ! git diff --cached --quiet; then
+          git commit -m "🔄 Atualização automática do CSV"
+          git push
+        fi
