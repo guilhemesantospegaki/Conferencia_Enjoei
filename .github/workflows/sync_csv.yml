@@ -16,12 +16,12 @@ jobs:
       run: |
         curl -L -o dados.csv "https://drive.google.com/uc?export=download&id=1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw"
 
-    - name: Confirmar alterações e fazer commit
+    - name: Commit e Push CSV Atualizado
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add dados.csv
-        if ! git diff --cached --quiet; then
-          git commit -m "🔄 Atualização automática do CSV"
-          git push
-        fi
+        git commit -m "🔄 Atualização automática do CSV"
+        git push https://github.com/${{ github.repository }}.git HEAD:main
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
