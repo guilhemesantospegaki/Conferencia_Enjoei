@@ -21,7 +21,7 @@ jobs:
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add dados.csv
-        git commit -m "🔄 Atualização automática do CSV"
+        git diff --cached --quiet || git commit -m "🔄 Atualização automática do CSV"
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
