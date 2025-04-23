@@ -15,7 +15,7 @@ jobs:
     - name: Instalar gdown e baixar o CSV
       run: |
         pip install gdown
-        gdown --id 1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw -O Db_Pacotes_Enjoei.csv
+        gdown "https://drive.google.com/uc?id=1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw" -O Db_Pacotes_Enjoei.csv
 
     - name: Commit e Push CSV Atualizado
       run: |
