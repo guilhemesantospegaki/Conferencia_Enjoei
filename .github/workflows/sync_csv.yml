@@ -12,9 +12,10 @@ jobs:
     - name: Clonar repositório
       uses: actions/checkout@v3
 
-    - name: Baixar CSV do Google Drive
+    - name: Instalar gdown e baixar o CSV
       run: |
-        curl -L -o Db_Pacotes_Enjoei.csv "https://drive.google.com/uc?export=download&id=1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw"
+        pip install gdown
+        gdown --id 1a8DjJ9bkHZKoJvzfcDHR54EAymHXUFTw -O Db_Pacotes_Enjoei.csv
 
     - name: Commit e Push CSV Atualizado
       run: |
