@@ -3,9 +3,17 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
-    datas=[('assets\\\\Pegaki_Fundo escuro.png', 'assets')],
+    datas=[
+        ('assets/Mono Pegaki_Fundo escuro.png', 'assets'),
+        ('assets/Pegaki_Fundo branco.png', 'assets'),
+        ('assets/Conferencia_Enjoei.ico', 'assets'),
+        ('validacao_icon.svg', '.'),
+        ('log_icon.svg', '.'),
+        ('download_icon.svg', '.'),
+        ('reset_icon.svg', '.')
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -22,7 +30,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='main',
+    name='Conferência Enjoei',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,4 +43,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['assets/Conferencia_Enjoei.ico'],
 )
