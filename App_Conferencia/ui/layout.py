@@ -147,7 +147,7 @@ class SenhaDialog(QDialog):
         self.show()  # Mostra novamente a janela, garantindo que não será fechada sem senha
 
     def validar(self):
-        if self.senha_input.text() == "1234":
+        if self.senha_input.text() == "Enjoei#1234":
             self.accept()
         else:
             msg = QMessageBox(self)
