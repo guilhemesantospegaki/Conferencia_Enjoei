@@ -2,38 +2,55 @@ import requests
 import os
 import sys
 import shutil
+import logging
 
-# Versão atual do seu app
-VERSAO_ATUAL = "1.0.0"
+# Versão atual do app - você deve alterar isso em cada release
+VERSAO_ATUAL = "1.0.1"
 
-# Link cru para o versao.txt (ajuste com seu repositório real)
+# Link para o versao.txt no GitHub
 URL_VERSAO = "https://raw.githubusercontent.com/guilhemesantospegaki/Conferencia_Enjoei/main/versao.txt"
 
-# Link direto para o .exe da nova versão
-URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/latest/download/Conferencia_Enjoei.exe"
+# Link direto para o .exe da última release (você sobe isso em Releases)
+URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.1/Conferencia.Enjoei.exe"
+
+# Configuração de logs
+logging.basicConfig(filename='atualizacao.log', level=logging.INFO, format='%(asctime)s - %(message)s')
+
+NOME_EXECUTAVEL = "Conferência Enjoei.exe"
 
 def verificar_e_atualizar():
     try:
         versao_online = requests.get(URL_VERSAO, timeout=5).text.strip()
         if versao_online != VERSAO_ATUAL:
-            print(f"Atualização disponível: {versao_online}")
+            logging.info(f"Nova versão disponível: {versao_online}")
+            print(f"Nova versão disponível: {versao_online}")
             baixar_e_substituir()
+        else:
+            logging.info("Aplicativo está na versão mais recente.")
+            print("Aplicativo está na versão mais recente.")
     except Exception as e:
+        logging.error("Erro ao verificar atualização: " + str(e))
         print("Erro ao verificar atualização:", e)
 
 def baixar_e_substituir():
     try:
+        logging.info("Baixando nova versão...")
         print("Baixando nova versão...")
         response = requests.get(URL_EXE, stream=True)
-        with open("Conferencia_Enjoei_novo.exe", "wb") as f:
+        with open("Conferência Enjoei_novo.exe", "wb") as f:
             shutil.copyfileobj(response.raw, f)
 
-        print("Atualizando...")
-        os.rename("Conferencia_Enjoei.exe", "Conferencia_Enjoei_antigo.exe")
-        os.rename("Conferencia_Enjoei_novo.exe", "Conferencia_Enjoei.exe")
+        logging.info("Substituindo executável antigo...")
+        print("Substituindo executável antigo...")
+        os.rename(NOME_EXECUTAVEL, "Conferência Enjoei_backup.exe")
+        os.rename("Conferência Enjoei_novo.exe", NOME_EXECUTAVEL)
 
-        print("Reiniciando nova versão...")
-        os.startfile("Conferencia_Enjoei.exe")
+        logging.info("Reiniciando app com nova versão...")
+        print("Reiniciando app com nova versão...")
+        os.startfile(NOME_EXECUTAVEL)
         sys.exit()
     except Exception as e:
+        logging.error("Erro ao atualizar: " + str(e))
         print("Erro ao atualizar:", e)
+
+

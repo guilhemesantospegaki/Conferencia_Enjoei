@@ -586,6 +586,10 @@
    'C:\\Users\\guilherme.santos_int\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\copy.py',
    'PYMODULE'),
   ('core', '-', 'PYMODULE'),
+  ('core.atualizador',
+   'C:\\Users\\guilherme.santos_int\\Desktop\\Projetos\\Automações\\Conferência '
+   'Enjoei\\Conferencia_Enjoei\\App_Conferencia\\core\\atualizador.py',
+   'PYMODULE'),
   ('core.github_csv',
    'C:\\Users\\guilherme.santos_int\\Desktop\\Projetos\\Automações\\Conferência '
    'Enjoei\\Conferencia_Enjoei\\App_Conferencia\\core\\github_csv.py',
