@@ -11,7 +11,7 @@ VERSAO_ATUAL = "1.0.3"
 URL_VERSAO = "https://raw.githubusercontent.com/guilhemesantospegaki/Conferencia_Enjoei/refs/heads/main/App_Conferencia/versao.txt"
 
 # Link direto para o .exe da última release (você sobe isso em Releases)
-URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.2/Conferencia.Enjoei.exe"
+URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.3/Conferencia.Enjoei.exe"
 
 # Configuração de logs
 logging.basicConfig(filename='atualizacao.log', level=logging.INFO, format='%(asctime)s - %(message)s')
