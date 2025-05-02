@@ -181,7 +181,7 @@ class SenhaDialog(QDialog):
 class ValidadorApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Conferência Enjoei")
+        self.setWindowTitle("Testando OK")
         self.setMinimumSize(1280, 720)
         self.setStyleSheet("""
             * { font-family: 'Roboto'; font-size: 14px; }

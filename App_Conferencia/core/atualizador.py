@@ -5,7 +5,7 @@ import shutil
 import logging
 
 # Versão atual do app - você deve alterar isso em cada release
-VERSAO_ATUAL = "1.0.1"
+VERSAO_ATUAL = "1.0.3"
 
 # Link para o versao.txt no GitHub
 URL_VERSAO = "https://raw.githubusercontent.com/guilhemesantospegaki/Conferencia_Enjoei/refs/heads/main/App_Conferencia/versao.txt"
