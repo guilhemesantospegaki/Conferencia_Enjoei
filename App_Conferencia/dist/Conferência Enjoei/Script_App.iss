@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Conferência Enjoei"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "Guilherme Santos/Pegaki by Intelipost"
 #define MyAppExeName "Conferência Enjoei.exe"
 #define MyAppAssocName ""
@@ -24,7 +24,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=C:\Users\guilherme.santos_int\Desktop\Projetos\Automações\Conferência Enjoei\Conferencia_Enjoei\App_Conferencia
-OutputBaseFilename=Conferencia_Enjoei_Installer_{#MyAppVersion}
+OutputBaseFilename=Conferencia_Enjoei_Installer
 SetupIconFile=C:\Users\guilherme.santos_int\Desktop\Projetos\Automações\Conferência Enjoei\Conferencia_Enjoei\App_Conferencia\dist\Conferência Enjoei\assets\Conferencia_Enjoei.ico
 Compression=lzma
 SolidCompression=yes
