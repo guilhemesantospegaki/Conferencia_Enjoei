@@ -12,13 +12,13 @@ logging.basicConfig(
 )
 
 # Versão atual do app
-VERSAO_ATUAL = "1.0.3"
+VERSAO_ATUAL = "1.0.4"
 
 # Link para a versão mais recente
 URL_VERSAO = "https://raw.githubusercontent.com/guilhemesantospegaki/Conferencia_Enjoei/refs/heads/main/App_Conferencia/versao.txt"
 
 # Link direto para o executável da última versão (atenção ao nome com espaço e acento)
-URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.3/Conferencia.Enjoei.exe"
+URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.4/Conferencia.Enjoei.exe"
 
 def verificar_e_atualizar():
     try:

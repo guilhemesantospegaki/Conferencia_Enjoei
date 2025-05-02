@@ -147,7 +147,7 @@ class SenhaDialog(QDialog):
         self.show()  # Mostra novamente a janela, garantindo que não será fechada sem senha
 
     def validar(self):
-        if self.senha_input.text() == "Enjoei_Teste":
+        if self.senha_input.text() == "XD@2025":
             self.accept()
         else:
             msg = QMessageBox(self)
@@ -181,7 +181,7 @@ class SenhaDialog(QDialog):
 class ValidadorApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Testando OK")
+        self.setWindowTitle("Conferência Enjoei")
         self.setMinimumSize(1280, 720)
         self.setStyleSheet("""
             * { font-family: 'Roboto'; font-size: 14px; }
