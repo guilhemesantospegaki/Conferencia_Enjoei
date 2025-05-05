@@ -12,13 +12,13 @@ logging.basicConfig(
 )
 
 # Versão atual do app
-VERSAO_ATUAL = "1.0.5"
+VERSAO_ATUAL = "1.0.6"
 
 # Link para a versão mais recente
 URL_VERSAO = "https://raw.githubusercontent.com/guilhemesantospegaki/Conferencia_Enjoei/refs/heads/main/App_Conferencia/versao.txt"
 
 # Link direto para o executável da última versão (atenção ao nome com espaço e acento)
-URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.5/Conferencia.Enjoei.exe"
+URL_EXE = "https://github.com/guilhemesantospegaki/Conferencia_Enjoei/releases/download/v1.0.6/Conferencia.Enjoei.exe"
 
 def verificar_e_atualizar():
     try:
@@ -40,6 +40,11 @@ def baixar_e_substituir():
         response = requests.get(URL_EXE, stream=True)
         with open("Conferência Enjoei_novo.exe", "wb") as f:
             shutil.copyfileobj(response.raw, f)
+
+        # Remove backup antigo se existir
+        if os.path.exists("Conferência Enjoei_backup.exe"):
+            logging.info("Removendo backup anterior.")
+            os.remove("Conferência Enjoei_backup.exe")
 
         logging.info("Substituindo executável antigo...")
         os.rename("Conferência Enjoei.exe", "Conferência Enjoei_backup.exe")
