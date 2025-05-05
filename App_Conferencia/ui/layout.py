@@ -5,9 +5,18 @@ from PySide6.QtGui import QIcon, QFont, QColor, QPalette, QPixmap
 from PySide6.QtCore import Qt, QSize, QTimer, QDateTime
 from datetime import datetime
 from core.github_csv import carregar_csv_github
-import sys
+import csv
 import pandas as pd
 import re
+import logging
+import os
+
+# Cria o log no mesmo diretório onde o script está sendo executado
+logging.basicConfig(
+    filename=os.path.join(os.getcwd(), "conferencia_erros.log"),
+    level=logging.ERROR,  # Ou INFO se quiser registrar também os eventos não críticos
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 regex_pug = re.compile(r"^PUG\d{8}(CAM|BIR|GRU|FRC|RJO|GYN|JOI|CWB|MGA|DIV|CTG|PCD)$")
 
@@ -517,6 +526,7 @@ class ValidadorApp(QWidget):
             if regex_pug.match(codigo):
                 if codigo in pug_contagem:
                     self.status_label.setText("⚠️ Esse PUG já foi usado.")
+                    logging.error(f"PUG duplicado detectado: {codigo}")
                 else:
                     pug_atual = codigo
                     contador_validos = 0
@@ -526,11 +536,13 @@ class ValidadorApp(QWidget):
                     estado = "aguardando_rastreio"
             else:
                 self.status_label.setText("❌ PUG inválido. Formato incorreto.")
+                logging.error(f"PUG inválido: {codigo}")
             return
 
         if estado == "aguardando_rastreio":
             if not codigo.startswith("PNL"):
                 self.status_label.setText("❌ Código de rastreio deve começar com PNL.")
+                logging.error(f"Rastreio inválido (não começa com PNL): {codigo}")
             elif codigo in pacotes_bipados:
                 self.status_label.setText("❌ Código de rastreio duplicado detectado! ❌")
                 self.marcar_duplicado(codigo)
@@ -541,6 +553,7 @@ class ValidadorApp(QWidget):
                     f"{pacote_duplicado['PUG']}<br>"
                     f"Código: {pacote_duplicado['Rastreio']}<br>"
                     f"Etiqueta: {pacote_duplicado['Etiqueta']}")
+                logging.error(f"Pacote duplicado detectado: {codigo} - PUG: {pug_atual}")
                 if not self.pedir_senha(mensagem):
                     return
                 self.limpar_duplicado(codigo)
@@ -556,8 +569,23 @@ class ValidadorApp(QWidget):
             etiqueta = codigo
             resultado = df[df["[Codigo de Rastreio]"] == rastreio]
             
-            if resultado.empty or resultado["[Etiqueta Last Mile]"].values[0] != etiqueta:
+            if resultado.empty:
+                self.status_label.setText("❌ Código de rastreio não encontrado na base. ❌")
+                logging.error(f"Código de rastreio não encontrado na base: {rastreio}")
+                self.salvar_erro("Inconsistência", pug_atual, rastreio, etiqueta)
+                if not self.pedir_senha("Código de rastreio não encontrado na base."):
+                    return
+                self.status_label.setText("🔄 Bipar código de rastreio.")
+                estado = "aguardando_rastreio"
+                return
+            
+            # Obtenção da etiqueta da base de dados
+            etiqueta_base = resultado["[Etiqueta Last Mile]"].values[0]
+
+            if etiqueta_base != etiqueta:
                 self.status_label.setText("❌ Etiqueta não corresponde ao código de rastreio. ❌")
+                logging.error(f"Etiqueta não corresponde ao código de rastreio. "
+                  f"Rastreio: {rastreio}, Etiqueta na base: {etiqueta_base}, Etiqueta bipada: {etiqueta}")
                 self.salvar_erro("Inconsistência", pug_atual, rastreio, etiqueta)
                 if not self.pedir_senha("Etiqueta não corresponde ao código de rastreio."):
                     return
@@ -567,6 +595,7 @@ class ValidadorApp(QWidget):
 
             if rastreio in pacotes_bipados:
                 self.marcar_duplicado(rastreio)
+                logging.error(f"Rastreio duplicado detectado: {rastreio}")
                 if not self.pedir_senha("Código de rastreio duplicado detectado!"):
                     return
                 self.status_label.setText("🔄 Bipar código de rastreio.")
@@ -618,6 +647,16 @@ class ValidadorApp(QWidget):
             item.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, i, item)
         linhas_destacadas[rastreio] = row
+
+        # >>> Adiciona no CSV automaticamente <<<
+        caminho_csv = "validados.csv"
+        escrever_cabecalho = not os.path.exists(caminho_csv)
+
+        with open(caminho_csv, mode="a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if escrever_cabecalho:
+                writer.writerow(["Ordem", "PUG", "Código de Rastreio", "Etiqueta"])
+            writer.writerow([ordem, pug, rastreio, etiqueta])
 
     def atualizar_pug(self, pug):
         if pug in pug_contagem:
