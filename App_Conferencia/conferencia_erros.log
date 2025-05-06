@@ -1,0 +1,12 @@
+2025-05-06 17:47:40,089 - INFO - Log funcionando corretamente.
+2025-05-06 17:47:40,464 - INFO - CSV carregado com sucesso do GitHub.
+2025-05-06 17:48:37,296 - INFO - E-mail com anexos enviado com sucesso.
+2025-05-06 17:48:37,298 - INFO - Arquivo 'PUG11111111GRU.csv' apagado com sucesso.
+2025-05-06 17:48:37,303 - INFO - Aplicação resetada com sucesso.
+2025-05-06 17:53:57,381 - INFO - Log funcionando corretamente.
+2025-05-06 17:53:57,557 - ERROR - Erro 429 ao acessar CSV no GitHub.
+2025-05-06 17:53:57,558 - ERROR - Falha ao carregar CSV do GitHub: Erro 429 ao acessar CSV
+Traceback (most recent call last):
+  File "c:\Users\guilherme.santos_int\Desktop\Projetos\Automações\Conferência Enjoei\Conferencia_Enjoei\App_Conferencia\core\github_csv.py", line 24, in carregar_csv_github
+    raise Exception(f"Erro {response.status_code} ao acessar CSV")
+Exception: Erro 429 ao acessar CSV

@@ -11,11 +11,20 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 import csv
+import sys
 import pandas as pd
 import re
 import logging
 import os
 from dotenv import load_dotenv
+
+# Detecta se está rodando como .exe (PyInstaller)
+if getattr(sys, 'frozen', False):
+    base_path = sys._MEIPASS
+else:
+    base_path = os.path.abspath(".")
+
+dotenv_path = os.path.join(base_path, ".env")
 
 load_dotenv()
 
@@ -23,12 +32,19 @@ EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE")
 EMAIL_SENHA = os.getenv("EMAIL_SENHA")
 EMAIL_DESTINATARIO = os.getenv("EMAIL_DESTINATARIO")
 
-# Cria o log no mesmo diretório onde o script está sendo executado
+
+# Remover qualquer handler existente (útil em scripts/jupyter)
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
 logging.basicConfig(
     filename=os.path.join(os.getcwd(), "conferencia_erros.log"),
-    level=logging.ERROR,  # Ou INFO se quiser registrar também os eventos não críticos
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    encoding="utf-8"
 )
+
+logging.info("Log funcionando corretamente.")
 
 regex_pug = re.compile(r"^PUG\d{8}(CAM|BIR|GRU|FRC|RJO|GYN|JOI|CWB|MGA|DIV|CTG|PCD)$")
 
@@ -731,69 +747,69 @@ class ValidadorApp(QWidget):
 
     def resetar(self):
         global ultimo_codigo, pug_atual, estado, contador_validos
-        ultimo_codigo = None
-        pug_atual = None
-        estado = "aguardando_pug"
-        contador_validos = 0
-        self.contador_label.setText("Pacotes válidos: 0")
-        self.status_label.setText("🔁 Reiniciado. Aguardando novo PUG...")
-        self.entrada.setFocus()
+        try:
+            ultimo_codigo = None
+            pug_atual = None
+            estado = "aguardando_pug"
+            contador_validos = 0
+            self.contador_label.setText("Pacotes válidos: 0")
+            self.status_label.setText("🔁 Reiniciado. Aguardando novo PUG...")
+            self.entrada.setFocus()
+            logging.info("Aplicação resetada com sucesso.")
+        except Exception as e:
+            logging.error(f"Erro ao resetar aplicação: {e}")
 
 
     def enviar_email_ao_fechar(self):
+        arquivos_anexar = [f"{pug_atual}.csv", "conferencia_erros.log"]
 
-        # Caminho do arquivo a ser anexado (exemplo: "relatorio.csv" na raiz)
-        arquivos_anexar = [f"{pug_atual}.csv", "conferencia_erros.log"]  # troque para o nome do seu arquivo
+        try:
+            msg = MIMEMultipart()
+            msg['Subject'] = "Relatório App Conferência Enjoei"
+            msg['From'] = EMAIL_REMETENTE
+            msg['To'] = EMAIL_DESTINATARIO
 
-        # Cria o e-mail com texto e anexo
-        msg = MIMEMultipart()
-        msg['Subject'] = "Relatório App Conferência Enjoei"
-        msg['From'] = EMAIL_REMETENTE
-        msg['To'] = EMAIL_DESTINATARIO
+            corpo = MIMEText("Segue em anexo os eventos do aplicativo no dia.", "plain")
+            msg.attach(corpo)
 
-        # Corpo do e-mail
-        corpo = MIMEText("Segue em anexo os eventos do aplicativo no dia.", "plain")
-        msg.attach(corpo)
+            for caminho_anexo in arquivos_anexar:
+                if os.path.exists(caminho_anexo):
+                    with open(caminho_anexo, "rb") as arquivo:
+                        parte = MIMEBase("application", "octet-stream")
+                        parte.set_payload(arquivo.read())
+                        encoders.encode_base64(parte)
+                        parte.add_header(
+                            "Content-Disposition",
+                            f'attachment; filename="{os.path.basename(caminho_anexo)}"'
+                        )
+                        msg.attach(parte)
+                else:
+                    logging.warning(f"Arquivo para anexo não encontrado: {caminho_anexo}")
 
-        for caminho_anexo in arquivos_anexar:
-            with open(caminho_anexo, "rb") as arquivo:
-                parte = MIMEBase("application", "octet-stream")
-                parte.set_payload(arquivo.read())
-                encoders.encode_base64(parte)
-                parte.add_header(
-                    "Content-Disposition",
-                    f'attachment; filename="{os.path.basename(caminho_anexo)}"'
-                )
-                msg.attach(parte)
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+                servidor.login(EMAIL_REMETENTE, EMAIL_SENHA)
+                servidor.send_message(msg)
 
-        # Envio
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(EMAIL_REMETENTE, EMAIL_SENHA)
-            servidor.send_message(msg)
+            logging.info("E-mail com anexos enviado com sucesso.")
+        except Exception as e:
+            logging.error(f"Erro ao enviar e-mail: {e}")
 
+
+    def apagar_arquivos(self):
+        arquivos = [f"{pug_atual}.csv"]  # Apenas o CSV do PUG será apagado
+
+        for arquivo in arquivos:
+            if os.path.exists(arquivo):
+                try:
+                    os.remove(arquivo)
+                    logging.info(f"Arquivo '{arquivo}' apagado com sucesso.")
+                except Exception as e:
+                    logging.error(f"Erro ao apagar '{arquivo}': {e}")
+            else:
+                logging.warning(f"Arquivo '{arquivo}' não encontrado para apagar.")
 
     def ao_clicar_resetar(self):
         self.enviar_email_ao_fechar()
         self.apagar_arquivos()
         self.resetar()
 
-    def apagar_arquivos(self):
-        arquivos = [f"{pug_atual}.csv", "conferencia_erros.log"]  # Substitua pelos nomes reais
-
-        # Fecha handlers de logging se estiverem abertos
-        logger = logging.getLogger()
-        for handler in logger.handlers[:]:
-            if isinstance(handler, logging.FileHandler):
-                handler.flush()
-                handler.close()
-                logger.removeHandler(handler)
-
-        for arquivo in arquivos:
-            if os.path.exists(arquivo):
-                try:
-                    os.remove(arquivo)
-                    print(f"Arquivo '{arquivo}' apagado com sucesso.")
-                except Exception as e:
-                    print(f"Erro ao apagar '{arquivo}': {e}")
-            else:
-                print(f"Arquivo '{arquivo}' não encontrado.")

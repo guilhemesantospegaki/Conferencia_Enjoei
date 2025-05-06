@@ -12,7 +12,8 @@ a = Analysis(
         ('validacao_icon.svg', '.'),
         ('log_icon.svg', '.'),
         ('download_icon.svg', '.'),
-        ('reset_icon.svg', '.')
+        ('reset_icon.svg', '.'),
+        ('.env', '.')
     ],
     hiddenimports=[],
     hookspath=[],
