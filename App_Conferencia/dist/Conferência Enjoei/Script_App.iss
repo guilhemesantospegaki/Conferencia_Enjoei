@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Conferência Enjoei"
-#define MyAppVersion "1.0.5"
+#define MyAppVersion "1.0.7"
 #define MyAppPublisher "Guilherme Santos/Pegaki by Intelipost"
 #define MyAppExeName "Conferência Enjoei.exe"
 #define MyAppAssocName ""

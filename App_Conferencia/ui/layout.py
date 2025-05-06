@@ -5,11 +5,23 @@ from PySide6.QtGui import QIcon, QFont, QColor, QPalette, QPixmap
 from PySide6.QtCore import Qt, QSize, QTimer, QDateTime
 from datetime import datetime
 from core.github_csv import carregar_csv_github
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 import csv
 import pandas as pd
 import re
 import logging
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE")
+EMAIL_SENHA = os.getenv("EMAIL_SENHA")
+EMAIL_DESTINATARIO = os.getenv("EMAIL_DESTINATARIO")
 
 # Cria o log no mesmo diretório onde o script está sendo executado
 logging.basicConfig(
@@ -190,7 +202,7 @@ class SenhaDialog(QDialog):
 class ValidadorApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Teste")
+        self.setWindowTitle("Conferência Enjoei")
         self.setMinimumSize(1280, 720)
         self.setStyleSheet("""
             * { font-family: 'Roboto'; font-size: 14px; }
@@ -339,6 +351,13 @@ class ValidadorApp(QWidget):
         self.init_erros_ui()
 
         self.mostrar_validacao()
+
+    def closeEvent(self, event):
+        try:
+            self.exportar_tabela_para_excel(self.table)
+        except Exception as e:
+            print(f"Erro ao enviar e-mail: {e}")
+        event.accept()
     
     def exportar_tabela_para_excel(self, table_widget):
         # Pega os dados da QTableWidget
@@ -420,7 +439,7 @@ class ValidadorApp(QWidget):
         self.reset_btn = QPushButton("Resetar")
         self.reset_btn.setIcon(QIcon("reset_icon.svg"))
         self.reset_btn.setIconSize(QSize(16, 16))
-        self.reset_btn.clicked.connect(self.resetar)
+        self.reset_btn.clicked.connect(self.ao_clicar_resetar)
 
         self.reset_btn.setStyleSheet("""
             QPushButton {
@@ -650,13 +669,16 @@ class ValidadorApp(QWidget):
 
         # >>> Adiciona no CSV automaticamente <<<
         caminho_csv = "validados.csv"
+        caminho_csv_pug = f"{pug_atual}.csv"
         escrever_cabecalho = not os.path.exists(caminho_csv)
 
-        with open(caminho_csv, mode="a", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            if escrever_cabecalho:
-                writer.writerow(["Ordem", "PUG", "Código de Rastreio", "Etiqueta"])
-            writer.writerow([ordem, pug, rastreio, etiqueta])
+        for caminho_csv in [caminho_csv, caminho_csv_pug]:
+            escrever_cabecalho = not os.path.exists(caminho_csv)
+            with open(caminho_csv, mode="a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                if escrever_cabecalho:
+                    writer.writerow(["Ordem", "PUG", "Código de Rastreio", "Etiqueta"])
+                writer.writerow([ordem, pug, rastreio, etiqueta])
 
     def atualizar_pug(self, pug):
         if pug in pug_contagem:
@@ -718,3 +740,60 @@ class ValidadorApp(QWidget):
         self.entrada.setFocus()
 
 
+    def enviar_email_ao_fechar(self):
+
+        # Caminho do arquivo a ser anexado (exemplo: "relatorio.csv" na raiz)
+        arquivos_anexar = [f"{pug_atual}.csv", "conferencia_erros.log"]  # troque para o nome do seu arquivo
+
+        # Cria o e-mail com texto e anexo
+        msg = MIMEMultipart()
+        msg['Subject'] = "Relatório App Conferência Enjoei"
+        msg['From'] = EMAIL_REMETENTE
+        msg['To'] = EMAIL_DESTINATARIO
+
+        # Corpo do e-mail
+        corpo = MIMEText("Segue em anexo os eventos do aplicativo no dia.", "plain")
+        msg.attach(corpo)
+
+        for caminho_anexo in arquivos_anexar:
+            with open(caminho_anexo, "rb") as arquivo:
+                parte = MIMEBase("application", "octet-stream")
+                parte.set_payload(arquivo.read())
+                encoders.encode_base64(parte)
+                parte.add_header(
+                    "Content-Disposition",
+                    f'attachment; filename="{os.path.basename(caminho_anexo)}"'
+                )
+                msg.attach(parte)
+
+        # Envio
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+            servidor.login(EMAIL_REMETENTE, EMAIL_SENHA)
+            servidor.send_message(msg)
+
+
+    def ao_clicar_resetar(self):
+        self.enviar_email_ao_fechar()
+        self.apagar_arquivos()
+        self.resetar()
+
+    def apagar_arquivos(self):
+        arquivos = [f"{pug_atual}.csv", "conferencia_erros.log"]  # Substitua pelos nomes reais
+
+        # Fecha handlers de logging se estiverem abertos
+        logger = logging.getLogger()
+        for handler in logger.handlers[:]:
+            if isinstance(handler, logging.FileHandler):
+                handler.flush()
+                handler.close()
+                logger.removeHandler(handler)
+
+        for arquivo in arquivos:
+            if os.path.exists(arquivo):
+                try:
+                    os.remove(arquivo)
+                    print(f"Arquivo '{arquivo}' apagado com sucesso.")
+                except Exception as e:
+                    print(f"Erro ao apagar '{arquivo}': {e}")
+            else:
+                print(f"Arquivo '{arquivo}' não encontrado.")
